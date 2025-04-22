@@ -1,0 +1,35 @@
+name: Sync Upstream Repo
+
+on:
+  schedule:
+    # 每天凌晨 2 点（UTC 时间）自动运行（北京时间 10 点）
+    - cron: "0 2 * * *"
+  # 允许手动触发（在 Actions 页面点击按钮运行）
+  workflow_dispatch:
+
+jobs:
+  sync-branches:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检查仓库代码
+        uses: actions/checkout@v4
+        with:
+          # 使用 GitHub Token 获取仓库写入权限
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 添加原始仓库为上游远程源
+        run: |
+          git remote add upstream https://github.com/jwyGithub/sub-convert.git
+          git fetch upstream
+
+      - name: 合并上游 main 分支到本地的 main
+        run: |
+          git checkout main
+          git merge upstream/main
+          git push origin main
+
+      - name: 合并上游 release 分支到本地的 release
+        run: |
+          git checkout release
+          git merge upstream/release
+          git push origin release
